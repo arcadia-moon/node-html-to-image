@@ -4,7 +4,7 @@ import puppeteerCore from "puppeteer-core";
 import rimraf from "rimraf";
 import { createWorker } from "tesseract.js";
 
-import { nodeHtmlToImage } from "./main";
+import nodeHtmlToImage from "./main";
 
 describe("node-html-to-image", () => {
   let mockExit;
@@ -33,11 +33,14 @@ describe("node-html-to-image", () => {
     it("should stop the program properly", async () => {
       /* eslint-disable @typescript-eslint/ban-ts-comment */
       await expect(async () => {
-        await nodeHtmlToImage({
+        const instance = await new nodeHtmlToImage().createInstance();
+        await instance.render({
           html: "<html></html>",
           type: "jpeg",
           // @ts-ignore
           quality: "wrong value",
+        }).catch(() => {
+          return instance.shutdown(true)
         });
       }).rejects.toThrow();
 
@@ -48,29 +51,34 @@ describe("node-html-to-image", () => {
 
   describe("single image", () => {
     it("should generate output file", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance()
+      await instance.render({
         output: "./generated/image.png",
         html: "<html></html>",
       });
+      await instance.shutdown();
 
       expect(existsSync("./generated/image.png")).toBe(true);
     });
 
     it("should return a buffer", async () => {
-      const result = await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance()
+      const result = await instance.render({
         html: "<html></html>",
       });
-
+      await instance.shutdown();
       expect(result).toBeInstanceOf(Buffer);
     });
 
     it("should throw an error if html is not provided", async () => {
       await expect(async () => {
+        const instance = await new nodeHtmlToImage().createInstance()
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        await nodeHtmlToImage({
+        await instance.render({
           output: "./generated/image.png",
         });
+        await instance.shutdown();
       }).rejects.toThrow();
       expect(mockConsoleErr).toHaveBeenCalledWith(
         new Error("You must provide an html property.")
@@ -79,10 +87,13 @@ describe("node-html-to-image", () => {
 
     it("should throw timeout error", async () => {
       await expect(async () => {
-        await nodeHtmlToImage({
-          timeout: 500,
+        const instance = await new nodeHtmlToImage({
+          timeout: 500
+        }).createInstance()
+        await instance.render({
           html: "<html></html>"
         });
+        await instance.shutdown();
       }).rejects.toThrow();
       expect(mockConsoleErr).toHaveBeenCalledWith(
         new Error("Timeout hit: 500")
@@ -90,44 +101,48 @@ describe("node-html-to-image", () => {
     });
 
     it("should generate an jpeg image", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         output: "./generated/image.jpg",
         html: "<html></html>",
         type: "jpeg",
       });
-
+      await instance.shutdown();
       expect(existsSync("./generated/image.jpg")).toBe(true);
     });
 
     it("should put html in output file", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         output: "./generated/image.png",
         html: "<html><body>Hello world!</body></html>",
       });
-
+      await instance.shutdown();
       const text = await getTextFromImage("./generated/image.png");
       expect(text.trim()).toBe("Hello world!");
     });
 
     it("should use handlebars to customize content", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         output: "./generated/image.png",
         html: "<html><body>Hello {{name}}!</body></html>",
         content: { name: "Yvonnick" },
       });
-
+      await instance.shutdown();
       const text = await getTextFromImage("./generated/image.png");
       expect(text.trim()).toBe("Hello Yvonnick!");
     });
 
     it("should create selected element image", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         output: "./generated/image.png",
         html: '<html><body>Hello <div id="section">{{name}}!</div></body></html>',
         content: { name: "Sangwoo" },
         selector: "div#section",
       });
-
+      await instance.shutdown();
       const text = await getTextFromImage("./generated/image.png");
       expect(text.trim()).toBe("Sangwoo!");
     });
@@ -135,7 +150,8 @@ describe("node-html-to-image", () => {
 
   describe("batch", () => {
     it("should create two images", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         type: "png",
         quality: 300,
         html: "<html><body>Hello {{name}}!</body></html>",
@@ -144,7 +160,7 @@ describe("node-html-to-image", () => {
           { name: "World", output: "./generated/image2.png" },
         ],
       });
-
+      await instance.shutdown();
       const text1 = await getTextFromImage("./generated/image1.png");
       expect(text1.trim()).toBe("Hello Yvonnick!");
 
@@ -153,19 +169,21 @@ describe("node-html-to-image", () => {
     });
 
     it("should return two buffers", async () => {
-      const result = await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      const result = await instance.render({
         type: "png",
         quality: 300,
         html: "<html><body>Hello {{name}}!</body></html>",
         content: [{ name: "Yvonnick" }, { name: "World" }],
       });
-
+      await instance.shutdown();
       expect(result?.[0]).toBeInstanceOf(Buffer);
       expect(result?.[1]).toBeInstanceOf(Buffer);
     });
 
     it("should create selected elements images", async () => {
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         html: '<html><body>Hello <div id="section1">{{name}}!</div><div id="section2">World!</div></body></html>',
         content: [
           {
@@ -176,7 +194,7 @@ describe("node-html-to-image", () => {
           { output: "./generated/image2.png", selector: "div#section2" },
         ],
       });
-
+      await instance.shutdown();
       const text1 = await getTextFromImage("./generated/image1.png");
       expect(text1.trim()).toBe("Sangwoo!");
       const text2 = await getTextFromImage("./generated/image2.png");
@@ -192,13 +210,14 @@ describe("node-html-to-image", () => {
         output: `./generated/${i}.jpg`,
       }));
 
-      await nodeHtmlToImage({
+      const instance = await new nodeHtmlToImage().createInstance();
+      await instance.render({
         type: "png",
         quality: 300,
         html: "<html><body>Hello {{name}}!</body></html>",
         content,
       });
-
+      await instance.shutdown();
       expect(readdirSync("./generated")).toHaveLength(NUMBER_OF_IMAGES);
     });
   });
@@ -206,23 +225,28 @@ describe("node-html-to-image", () => {
     it("should pass puppeteer instance and generate image", async () => {
       const executablePath = puppeteer.executablePath();
 
-      await nodeHtmlToImage({
-        output: "./generated/image.png",
-        html: "<html></html>",
+      const instance = await new nodeHtmlToImage({
         puppeteerArgs: { executablePath },
         puppeteer: puppeteerCore,
+      }).createInstance();
+      await instance.render({
+        output: "./generated/image.png",
+        html: "<html></html>",
       });
-
+      await instance.shutdown();
       expect(existsSync("./generated/image.png")).toBe(true);
     });
 
     it("should throw an error if executablePath is not provided", async () => {
       await expect(async () => {
-        await nodeHtmlToImage({
-          output: "./generated/image.png",
-          html: "<html></html>",
+        const instance = await new nodeHtmlToImage({
           puppeteer: puppeteerCore,
+        }).createInstance();
+        await instance.render({
+          output: "./generated/image.png",
+          html: "<html></html>"
         });
+        await instance.shutdown();
       }).rejects.toThrow();
     });
   });

@@ -6,28 +6,25 @@ import { Options, ScreenshotParams, constructorOptions } from "./types";
 
 export default class nodeHtmlToImage {
   public cluster: Cluster<ScreenshotParams> = null;
-  public options: constructorOptions = null;
-  constructor(options?: constructorOptions) {
+  public options: constructorOptions = {};
+  constructor(options: constructorOptions = {}) {
     this.options = options;
   }
 
-  public createInstance() {
+  public async createInstance() {
     const {
       puppeteerArgs = {},
       timeout = 30000,
       puppeteer = undefined,
     } = this.options;
-    return Cluster.launch({
+    this.cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 2,
       timeout,
       puppeteerOptions: { ...puppeteerArgs, headless: true },
       puppeteer: puppeteer,
-    }).then((cluster: Cluster<ScreenshotParams>) => {
-      this.cluster = cluster;
-    }).then(() => {
-      return this;
     })
+    return this;
   }
 
   public render(options: Options) {
@@ -67,21 +64,30 @@ export default class nodeHtmlToImage {
           }
         );
       })
-    ).then((screenshots: Array<Screenshot>) => {
-      return this.cluster.idle().then(() => {
-        return shouldBatch
-          ? screenshots.map(({ buffer }) => buffer)
-          : screenshots[0].buffer;
-      })
+    ).then(async (screenshots: Array<Screenshot>) => {
+      await this.cluster.idle()
+      return shouldBatch
+        ? screenshots.map(({ buffer }) => buffer)
+        : screenshots[0].buffer;
     }).catch(async (err) => {
       console.error(err);
       await this.cluster.close();
       delete this.cluster;
-      return await this.createInstance();
+      throw err;
     });
   }
 
-  public shutdown() {
-    return this.cluster.close();
+  public async shutdown(isProcessExit = false) {
+    try {
+      if(this.cluster) {
+        await this.cluster.close();
+      }
+    }
+    catch {
+
+    }
+    if(isProcessExit) {
+      process.exit(1);
+    }
   }
 }
