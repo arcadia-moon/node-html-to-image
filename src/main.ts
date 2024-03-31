@@ -9,6 +9,7 @@ export default class nodeHtmlToImage {
   public options: constructorOptions = {};
   constructor(options: constructorOptions = {}) {
     this.options = options;
+    this.createInstance();
   }
 
   public async createInstance() {
@@ -67,12 +68,12 @@ export default class nodeHtmlToImage {
         );
       })
     ).then(async (screenshots: Array<Screenshot>) => {
-      await this.cluster.idle()
       return shouldBatch
         ? screenshots.map(({ buffer }) => buffer)
         : screenshots[0].buffer;
     }).catch(async (err) => {
       console.error(err);
+      await this.cluster.idle()
       await this.cluster.close();
       delete this.cluster;
       throw err;
@@ -82,6 +83,7 @@ export default class nodeHtmlToImage {
   public async shutdown(isProcessExit = false) {
     try {
       if (this.cluster) {
+        await this.cluster.idle()
         await this.cluster.close();
       }
     }

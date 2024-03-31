@@ -28,6 +28,7 @@ class nodeHtmlToImage {
         this.cluster = null;
         this.options = {};
         this.options = options;
+        this.createInstance();
     }
     createInstance() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -66,12 +67,12 @@ class nodeHtmlToImage {
                     return screenshot;
                 }));
             })).then((screenshots) => __awaiter(this, void 0, void 0, function* () {
-                yield this.cluster.idle();
                 return shouldBatch
                     ? screenshots.map(({ buffer }) => buffer)
                     : screenshots[0].buffer;
             })).catch((err) => __awaiter(this, void 0, void 0, function* () {
                 console.error(err);
+                yield this.cluster.idle();
                 yield this.cluster.close();
                 delete this.cluster;
                 throw err;
@@ -82,6 +83,7 @@ class nodeHtmlToImage {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 if (this.cluster) {
+                    yield this.cluster.idle();
                     yield this.cluster.close();
                 }
             }
