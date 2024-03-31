@@ -77,7 +77,6 @@ class nodeHtmlToImage {
                     return screenshot;
                 }));
             })).then((screenshots) => __awaiter(this, void 0, void 0, function* () {
-                yield this.cluster.idle();
                 return shouldBatch
                     ? screenshots.map(({ buffer }) => buffer)
                     : screenshots[0].buffer;

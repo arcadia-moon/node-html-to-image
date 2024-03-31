@@ -76,7 +76,6 @@ export default class nodeHtmlToImage {
         );
       })
     ).then(async (screenshots: Array<Screenshot>) => {
-      await this.cluster.idle()
       return shouldBatch
         ? screenshots.map(({ buffer }) => buffer)
         : screenshots[0].buffer;
