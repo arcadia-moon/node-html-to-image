@@ -28,7 +28,6 @@ class nodeHtmlToImage {
         this.cluster = null;
         this.options = {};
         this.options = options;
-        this.createInstance();
     }
     createInstance() {
         return __awaiter(this, void 0, void 0, function* () {

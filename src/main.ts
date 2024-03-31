@@ -9,7 +9,6 @@ export default class nodeHtmlToImage {
   public options: constructorOptions = {};
   constructor(options: constructorOptions = {}) {
     this.options = options;
-    this.createInstance();
   }
 
   public async createInstance() {
