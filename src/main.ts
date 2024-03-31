@@ -27,7 +27,7 @@ export default class nodeHtmlToImage {
     return this;
   }
 
-  public render(options: Options) {
+  public async render(options: Options) {
     const {
       html,
       encoding,
@@ -40,7 +40,9 @@ export default class nodeHtmlToImage {
     } = options;
     const shouldBatch = Array.isArray(content);
     const contents = shouldBatch ? content : [{ ...content, output, selector }];
-
+    if(!this.cluster) {
+      await this.createInstance();
+    }
     return Promise.all(
       contents.map((content) => {
         const { output, selector: contentSelector, ...pageContent } = content;

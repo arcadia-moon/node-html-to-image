@@ -17,11 +17,8 @@ export interface ScreenshotParams {
     output?: string;
 }
 export interface Options extends ScreenshotParams {
-    puppeteerArgs?: PuppeteerNodeLaunchOptions;
-    puppeteer?: any;
     waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
     beforeScreenshot?: (page: Page) => void;
-    timeout?: number;
 }
 export interface constructorOptions {
     puppeteerArgs?: PuppeteerNodeLaunchOptions;

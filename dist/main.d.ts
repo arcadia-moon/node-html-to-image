@@ -6,6 +6,6 @@ export default class nodeHtmlToImage {
     options: constructorOptions;
     constructor(options?: constructorOptions);
     createInstance(): Promise<this>;
-    render(options: Options): Promise<string | Buffer | (string | Buffer)[] | this>;
-    shutdown(): Promise<void>;
+    render(options: Options): Promise<string | Buffer | (string | Buffer)[]>;
+    shutdown(isProcessExit?: boolean): Promise<void>;
 }
