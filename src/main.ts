@@ -79,14 +79,14 @@ export default class nodeHtmlToImage {
 
   public async shutdown(isProcessExit = false) {
     try {
-      if(this.cluster) {
+      if (this.cluster) {
         await this.cluster.close();
       }
     }
-    catch {
-
+    catch (err) {
+      console.error(err)
     }
-    if(isProcessExit) {
+    if (isProcessExit) {
       process.exit(1);
     }
   }
