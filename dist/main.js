@@ -82,9 +82,6 @@ class nodeHtmlToImage {
                     : screenshots[0].buffer;
             })).catch((err) => __awaiter(this, void 0, void 0, function* () {
                 console.error(err);
-                yield this.cluster.idle();
-                yield this.cluster.close();
-                delete this.cluster;
                 throw err;
             }));
         });

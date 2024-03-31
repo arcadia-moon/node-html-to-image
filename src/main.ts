@@ -81,9 +81,6 @@ export default class nodeHtmlToImage {
         : screenshots[0].buffer;
     }).catch(async (err) => {
       console.error(err);
-      await this.cluster.idle()
-      await this.cluster.close();
-      delete this.cluster;
       throw err;
     });
   }
