@@ -10,6 +10,11 @@ export default class nodeHtmlToImage {
   private mutex = new Mutex();
   constructor(options: constructorOptions = {}) {
     this.options = options;
+    [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+      process.on(eventType, () => {
+        this.shutdown();
+      });
+    })
   }
 
   public async createInstance() {

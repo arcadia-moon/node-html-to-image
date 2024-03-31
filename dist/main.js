@@ -30,6 +30,11 @@ class nodeHtmlToImage {
         this.options = {};
         this.mutex = new async_mutex_1.Mutex();
         this.options = options;
+        [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+            process.on(eventType, () => {
+                this.shutdown();
+            });
+        });
     }
     createInstance() {
         return __awaiter(this, void 0, void 0, function* () {
