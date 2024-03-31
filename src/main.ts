@@ -21,7 +21,7 @@ export default class nodeHtmlToImage {
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 2,
       timeout,
-      puppeteerOptions: { ...puppeteerArgs, headless: 'new' },
+      puppeteerOptions: { ...puppeteerArgs, headless: true },
       puppeteer: puppeteer,
     }).then((cluster: Cluster<ScreenshotParams>) => {
       this.cluster = cluster;
