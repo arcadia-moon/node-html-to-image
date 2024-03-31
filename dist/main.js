@@ -51,7 +51,7 @@ class nodeHtmlToImage {
     }
     render(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { html, encoding, transparent, content, output, selector, type, quality, } = options;
+            const { html, encoding, transparent, content, output, selector, type, quality, blockedURLs = [], } = options;
             const shouldBatch = Array.isArray(content);
             const contents = shouldBatch ? content : [Object.assign(Object.assign({}, content), { output, selector })];
             if (!this.cluster) {
@@ -78,6 +78,23 @@ class nodeHtmlToImage {
                     type,
                     quality,
                 }, ({ page, data }) => __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        if (blockedURLs && Array.isArray(blockedURLs) && blockedURLs.length > 0) {
+                            yield page.setRequestInterception(true);
+                            const allowedRequest = (req) => !(blockedURLs.findIndex(x => req.url().toUpperCase().includes(x.toUpperCase())) > -1);
+                            page.on("request", req => {
+                                if (allowedRequest(req)) {
+                                    req.continue();
+                                }
+                                else {
+                                    req.abort();
+                                }
+                            });
+                        }
+                    }
+                    catch (e) {
+                        console.log(e);
+                    }
                     const screenshot = yield (0, screenshot_1.makeScreenshot)(page, Object.assign(Object.assign({}, options), { screenshot: new Screenshot_1.Screenshot(data) }));
                     return screenshot;
                 }));

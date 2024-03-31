@@ -43,6 +43,7 @@ export default class nodeHtmlToImage {
       selector,
       type,
       quality,
+      blockedURLs = [],
     } = options;
     const shouldBatch = Array.isArray(content);
     const contents = shouldBatch ? content : [{ ...content, output, selector }];
@@ -72,6 +73,23 @@ export default class nodeHtmlToImage {
             quality,
           },
           async ({ page, data }) => {
+            try {
+              if (blockedURLs && Array.isArray(blockedURLs) && blockedURLs.length > 0) {
+                await page.setRequestInterception(true);
+                const allowedRequest = (req: any) => !(blockedURLs.findIndex(x => req.url().toUpperCase().includes(x.toUpperCase())) > -1);
+                page.on("request", req => {
+                  if (allowedRequest(req)) {
+                    req.continue();
+                  }
+                  else {
+                    req.abort();
+                  }
+                });
+              }
+            }
+            catch (e) {
+              console.log(e)
+            }
             const screenshot = await makeScreenshot(page, {
               ...options,
               screenshot: new Screenshot(data),

@@ -19,6 +19,7 @@ export interface ScreenshotParams {
 export interface Options extends ScreenshotParams {
   waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
   beforeScreenshot?: (page: Page) => void;
+  blockedURLs?: string[]
 }
 
 export interface constructorOptions {
