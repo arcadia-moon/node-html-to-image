@@ -2,39 +2,54 @@ import { Cluster } from "puppeteer-cluster";
 
 import { Screenshot } from "./models/Screenshot";
 import { makeScreenshot } from "./screenshot";
-import { Options, ScreenshotParams } from "./types";
+import { Options, ScreenshotParams, constructorOptions } from "./types";
 
-export async function nodeHtmlToImage(options: Options) {
-  const {
-    html,
-    encoding,
-    transparent,
-    content,
-    output,
-    selector,
-    type,
-    quality,
-    puppeteerArgs = {},
-    timeout = 30000,
-    puppeteer = undefined,
-  } = options;
+export default class nodeHtmlToImage {
+  public cluster: Cluster<ScreenshotParams> = null;
+  public options: constructorOptions = null;
+  constructor(options?: constructorOptions) {
+    this.options = options;
+  }
 
-  const cluster: Cluster<ScreenshotParams> = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 2,
-    timeout,
-    puppeteerOptions: { ...puppeteerArgs, headless: 'new' },
-    puppeteer: puppeteer,
-  });
+  public createInstance() {
+    const {
+      puppeteerArgs = {},
+      timeout = 30000,
+      puppeteer = undefined,
+    } = this.options;
+    return Cluster.launch({
+      concurrency: Cluster.CONCURRENCY_CONTEXT,
+      maxConcurrency: 2,
+      timeout,
+      puppeteerOptions: { ...puppeteerArgs, headless: 'new' },
+      puppeteer: puppeteer,
+    }).then((cluster: Cluster<ScreenshotParams>) => {
+      this.cluster = cluster;
+    }).then(() => {
+      return true;
+    }).catch(() => {
+      return false;
+    });
+  }
 
-  const shouldBatch = Array.isArray(content);
-  const contents = shouldBatch ? content : [{ ...content, output, selector }];
+  public render(options: Options) {
+    const {
+      html,
+      encoding,
+      transparent,
+      content,
+      output,
+      selector,
+      type,
+      quality,
+    } = options;
+    const shouldBatch = Array.isArray(content);
+    const contents = shouldBatch ? content : [{ ...content, output, selector }];
 
-  try {
-    const screenshots: Array<Screenshot> = await Promise.all(
+    return Promise.all(
       contents.map((content) => {
         const { output, selector: contentSelector, ...pageContent } = content;
-        return cluster.execute(
+        return this.cluster.execute(
           {
             html,
             encoding,
@@ -54,16 +69,21 @@ export async function nodeHtmlToImage(options: Options) {
           }
         );
       })
-    );
-    await cluster.idle();
-    await cluster.close();
+    ).then((screenshots: Array<Screenshot>) => {
+      return this.cluster.idle().then(() => {
+        return shouldBatch
+          ? screenshots.map(({ buffer }) => buffer)
+          : screenshots[0].buffer;
+      })
+    }).catch(async (err) => {
+      console.error(err);
+      await this.cluster.close();
+      delete this.cluster;
+      return await this.createInstance();
+    });
+  }
 
-    return shouldBatch
-      ? screenshots.map(({ buffer }) => buffer)
-      : screenshots[0].buffer;
-  } catch (err) {
-    console.error(err);
-    await cluster.close();
-    process.exit(1);
+  public shutdown() {
+    return this.cluster.close();
   }
 }

@@ -1,4 +1,4 @@
-import { nodeHtmlToImage } from "./main";
+import nodeHtmlToImage from "./main";
 import { Cluster } from "puppeteer-cluster";
 
 import { Screenshot } from "./models/Screenshot";
@@ -44,20 +44,28 @@ describe("node-html-to-image | Unit", () => {
   });
 
   it("should sort buffer in the right order", async () => {
-    const result = await nodeHtmlToImage({
+    const nhti = new nodeHtmlToImage();
+    await nhti.createInstance();
+    const result = await nhti.render({
       html,
       content: [{ message: "Hello world!" }, { message: "Bonjour monde!" }],
     });
-
+    await nhti.shutdown();
     expect(result).toEqual([buffer1, buffer2]);
   });
 
   it("should pass 'timeout' to 'puppeteer-cluster' via options", async () => {
     const CLUSTER_TIMEOUT = 60 * 1000;
-    await nodeHtmlToImage({
-        html,
+    const nhti = new nodeHtmlToImage({
         timeout: CLUSTER_TIMEOUT,
+    })
+    await nhti.createInstance();
+    await nhti.render({
+      html,
+      content: [{ message: "Hello world!" }, { message: "Bonjour monde!" }],
     });
+
+    await nhti.shutdown();
 
     expect(launchMock).toHaveBeenCalledWith(expect.objectContaining({ timeout: CLUSTER_TIMEOUT }))
   });

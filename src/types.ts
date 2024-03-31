@@ -26,6 +26,12 @@ export interface Options extends ScreenshotParams {
   timeout?: number
 }
 
+export interface constructorOptions {
+  puppeteerArgs?: PuppeteerNodeLaunchOptions;
+  puppeteer?: any,
+  timeout?: number
+}
+
 export interface MakeScreenshotParams {
   screenshot: Screenshot;
   waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
