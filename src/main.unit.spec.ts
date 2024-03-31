@@ -44,28 +44,26 @@ describe("node-html-to-image | Unit", () => {
   });
 
   it("should sort buffer in the right order", async () => {
-    const nhti = new nodeHtmlToImage();
-    await nhti.createInstance();
-    const result = await nhti.render({
+    const instance = await new nodeHtmlToImage().createInstance();
+    const result = await instance.render({
       html,
       content: [{ message: "Hello world!" }, { message: "Bonjour monde!" }],
     });
-    await nhti.shutdown();
+    await instance.shutdown();
     expect(result).toEqual([buffer1, buffer2]);
   });
 
   it("should pass 'timeout' to 'puppeteer-cluster' via options", async () => {
     const CLUSTER_TIMEOUT = 60 * 1000;
-    const nhti = new nodeHtmlToImage({
+    const instance = await new nodeHtmlToImage({
         timeout: CLUSTER_TIMEOUT,
-    })
-    await nhti.createInstance();
-    await nhti.render({
+    }).createInstance();
+    await instance.render({
       html,
       content: [{ message: "Hello world!" }, { message: "Bonjour monde!" }],
     });
 
-    await nhti.shutdown();
+    await instance.shutdown();
 
     expect(launchMock).toHaveBeenCalledWith(expect.objectContaining({ timeout: CLUSTER_TIMEOUT }))
   });

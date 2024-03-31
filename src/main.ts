@@ -26,10 +26,8 @@ export default class nodeHtmlToImage {
     }).then((cluster: Cluster<ScreenshotParams>) => {
       this.cluster = cluster;
     }).then(() => {
-      return true;
-    }).catch(() => {
-      return false;
-    });
+      return this;
+    })
   }
 
   public render(options: Options) {
