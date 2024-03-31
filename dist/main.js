@@ -32,7 +32,7 @@ class nodeHtmlToImage {
         this.options = options;
         [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
             process.on(eventType, () => {
-                this.shutdown();
+                this.shutdown(true);
             });
         });
     }
@@ -103,7 +103,7 @@ class nodeHtmlToImage {
                 console.error(err);
             }
             if (isProcessExit) {
-                process.exit(1);
+                process.exit();
             }
         });
     }
