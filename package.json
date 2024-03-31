@@ -18,9 +18,10 @@
     "build": "tsc"
   },
   "files": [
+    "dist",
     "src",
     "types",
-    "!src/*.spec.js"
+    "!src/*.spec.ts"
   ],
   "devDependencies": {
     "@babel/core": "^7.18.6",
