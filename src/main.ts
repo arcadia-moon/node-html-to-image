@@ -1,12 +1,13 @@
 import { Cluster } from "puppeteer-cluster";
-
 import { Screenshot } from "./models/Screenshot";
 import { makeScreenshot } from "./screenshot";
 import { Options, ScreenshotParams, constructorOptions } from "./types";
+import { Mutex } from 'async-mutex';
 
 export default class nodeHtmlToImage {
   public cluster: Cluster<ScreenshotParams> = null;
   public options: constructorOptions = {};
+  private mutex = new Mutex();
   constructor(options: constructorOptions = {}) {
     this.options = options;
   }
@@ -40,8 +41,16 @@ export default class nodeHtmlToImage {
     } = options;
     const shouldBatch = Array.isArray(content);
     const contents = shouldBatch ? content : [{ ...content, output, selector }];
-    if(!this.cluster) {
-      await this.createInstance();
+    if (!this.cluster) {
+      await this.mutex.acquire().then(async (release: () => void) => {
+        try {
+          if (!this.cluster) {
+            await this.createInstance();
+          }
+        } finally {
+          release();
+        }
+      })
     }
     return Promise.all(
       contents.map((content) => {

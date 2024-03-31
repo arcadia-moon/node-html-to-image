@@ -8,6 +8,7 @@
   "author": "FRIN Yvonnick <frin.yvonnick@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "handlebars": "4.7.8",
     "puppeteer": "22.6.1",
     "puppeteer-cluster": "^0.24.0"

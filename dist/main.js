@@ -23,10 +23,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const puppeteer_cluster_1 = require("puppeteer-cluster");
 const Screenshot_1 = require("./models/Screenshot");
 const screenshot_1 = require("./screenshot");
+const async_mutex_1 = require("async-mutex");
 class nodeHtmlToImage {
     constructor(options = {}) {
         this.cluster = null;
         this.options = {};
+        this.mutex = new async_mutex_1.Mutex();
         this.options = options;
     }
     createInstance() {
@@ -48,7 +50,16 @@ class nodeHtmlToImage {
             const shouldBatch = Array.isArray(content);
             const contents = shouldBatch ? content : [Object.assign(Object.assign({}, content), { output, selector })];
             if (!this.cluster) {
-                yield this.createInstance();
+                yield this.mutex.acquire().then((release) => __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        if (!this.cluster) {
+                            yield this.createInstance();
+                        }
+                    }
+                    finally {
+                        release();
+                    }
+                }));
             }
             return Promise.all(contents.map((content) => {
                 const { output, selector: contentSelector } = content, pageContent = __rest(content, ["output", "selector"]);
