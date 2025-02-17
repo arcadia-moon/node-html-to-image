@@ -13,7 +13,7 @@ export class Screenshot {
   transparent?: boolean;
 
   constructor(params: ScreenshotParams) {
-    if (!params || !(params.html || params.url)) {
+    if (!params || (!params.html || !params.url)) {
       throw Error("You must provide an html property.");
     }
 
