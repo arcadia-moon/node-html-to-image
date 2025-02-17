@@ -4,13 +4,15 @@ export declare class Screenshot {
     output: string;
     content: Content;
     selector: string;
-    html: string;
+    html?: string;
+    url?: string;
     quality?: number;
     buffer?: Buffer | string;
     type?: ImageType;
     encoding?: Encoding;
     transparent?: boolean;
     constructor(params: ScreenshotParams);
-    setHTML(html: string): void;
+    setHTML(html?: string | null): void;
+    setURL(url: string): void;
     setBuffer(buffer: Buffer | string): void;
 }

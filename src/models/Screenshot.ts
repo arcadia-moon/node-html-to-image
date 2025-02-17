@@ -4,7 +4,8 @@ export class Screenshot {
   output: string;
   content: Content;
   selector: string;
-  html: string;
+  html?: string;
+  url?: string;
   quality?: number;
   buffer?: Buffer | string;
   type?: ImageType;
@@ -12,12 +13,13 @@ export class Screenshot {
   transparent?: boolean;
 
   constructor(params: ScreenshotParams) {
-    if (!params || !params.html) {
+    if (!params || !(params.html || params.url)) {
       throw Error("You must provide an html property.");
     }
 
     const {
       html,
+      url,
       encoding,
       transparent = false,
       output,
@@ -28,6 +30,7 @@ export class Screenshot {
     } = params;
 
     this.html = html;
+    this.url = url;
     this.encoding = encoding;
     this.transparent = transparent;
     this.type = type;
@@ -37,11 +40,18 @@ export class Screenshot {
     this.quality = type === "jpeg" ? quality : undefined;
   }
 
-  setHTML(html: string) {
+  setHTML(html?: string | null) {
     if (!html) {
       throw Error("You must provide an html property.");
     }
     this.html = html;
+  }
+
+  setURL(url: string) {
+    if (!url) {
+      throw Error("You must provide an url property.");
+    }
+    this.url = url;
   }
 
   setBuffer(buffer: Buffer | string) {

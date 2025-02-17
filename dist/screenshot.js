@@ -46,11 +46,16 @@ function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "netwo
                 throw Error("Some helper is not a valid function");
             }
         }
-        if ((screenshot === null || screenshot === void 0 ? void 0 : screenshot.content) || hasHelpers) {
-            const template = (0, handlebars_1.compile)(screenshot.html);
-            screenshot.setHTML(template(screenshot.content));
+        if (screenshot.html) {
+            if ((screenshot === null || screenshot === void 0 ? void 0 : screenshot.content) || hasHelpers) {
+                const template = (0, handlebars_1.compile)(screenshot.html);
+                screenshot.setHTML(template(screenshot.content));
+            }
+            yield page.setContent(screenshot.html, { waitUntil });
         }
-        yield page.setContent(screenshot.html, { waitUntil });
+        else {
+            yield page.goto(screenshot.url, { waitUntil });
+        }
         const element = yield page.$(screenshot.selector);
         if (!element) {
             throw Error("No element matches selector: " + screenshot.selector);
@@ -58,14 +63,14 @@ function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "netwo
         if (isFunction(beforeScreenshot)) {
             yield beforeScreenshot(page);
         }
-        const buffer = yield element.screenshot({
+        const result = yield element.screenshot({
             path: screenshot.output,
             type: screenshot.type,
             omitBackground: screenshot.transparent,
             encoding: screenshot.encoding,
             quality: screenshot.quality,
         });
-        screenshot.setBuffer(buffer);
+        screenshot.setBuffer(Buffer.from(result));
         return screenshot;
     });
 }

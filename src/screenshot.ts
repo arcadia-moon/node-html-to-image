@@ -24,13 +24,17 @@ export async function makeScreenshot(
       throw Error("Some helper is not a valid function");
     }
   }
+  if (screenshot.html) {
+    if (screenshot?.content || hasHelpers) {
+      const template = compile(screenshot.html);
+      screenshot.setHTML(template(screenshot.content));
+    }
 
-  if (screenshot?.content || hasHelpers) {
-    const template = compile(screenshot.html);
-    screenshot.setHTML(template(screenshot.content));
+    await page.setContent(screenshot.html, { waitUntil });
   }
-
-  await page.setContent(screenshot.html, { waitUntil });
+  else {
+    await page.goto(screenshot.url, { waitUntil });
+  }
   const element = await page.$(screenshot.selector);
   if (!element) {
     throw Error("No element matches selector: " + screenshot.selector);
