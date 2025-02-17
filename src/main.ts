@@ -17,21 +17,13 @@ export default class nodeHtmlToImage {
     })
   }
 
-  public async createInstance() {
-    const {
-      puppeteerArgs = {},
-      timeout = 30000,
-      puppeteer = undefined,
-    } = this.options;
-    this.cluster = await Cluster.launch({
-      concurrency: Cluster.CONCURRENCY_CONTEXT,
-      maxConcurrency: 2,
-      timeout,
-      puppeteerOptions: { ...puppeteerArgs, headless: true },
-      puppeteer: puppeteer,
-    })
-    return this;
-  }
+  const cluster: Cluster<ScreenshotParams> = await Cluster.launch({
+    concurrency: Cluster.CONCURRENCY_CONTEXT,
+    maxConcurrency: 2,
+    timeout = 30000,
+    puppeteerOptions: { ...puppeteerArgs, headless: true },
+    puppeteer: puppeteer,
+  });
 
   public async render(options: Options) {
     const {
@@ -95,18 +87,12 @@ export default class nodeHtmlToImage {
               screenshot: new Screenshot(data),
             });
             return screenshot;
-          }
+          },
         );
-      })
-    ).then(async (screenshots: Array<Screenshot>) => {
-      return shouldBatch
-        ? screenshots.map(({ buffer }) => buffer)
-        : screenshots[0].buffer;
-    }).catch(async (err) => {
-      console.error(err);
-      throw err;
-    });
-  }
+      }),
+    );
+    await cluster.idle();
+    await cluster.close();
 
   public async shutdown(isProcessExit = false) {
     try {
