@@ -7,7 +7,6 @@ export declare class Screenshot {
     html?: string;
     url?: string;
     quality?: number;
-    captureBeyondViewport?: boolean;
     buffer?: Buffer | string;
     type?: ImageType;
     encoding?: Encoding;

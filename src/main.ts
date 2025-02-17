@@ -44,7 +44,6 @@ export default class nodeHtmlToImage {
       selector,
       type,
       quality,
-      captureBeyondViewport = false,
       blockedURLs = [],
     } = options;
     const shouldBatch = Array.isArray(content);
@@ -74,7 +73,6 @@ export default class nodeHtmlToImage {
             selector: contentSelector ? contentSelector : selector,
             type,
             quality,
-            captureBeyondViewport
           },
           async ({ page, data }) => {
             try {

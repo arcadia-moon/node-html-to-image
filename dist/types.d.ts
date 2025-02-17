@@ -16,7 +16,6 @@ export interface ScreenshotParams {
     selector?: string;
     content?: Content;
     output?: string;
-    captureBeyondViewport?: boolean;
 }
 export interface Options extends ScreenshotParams {
     waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];

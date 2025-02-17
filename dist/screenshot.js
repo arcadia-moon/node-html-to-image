@@ -69,7 +69,6 @@ function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "netwo
             omitBackground: screenshot.transparent,
             encoding: screenshot.encoding,
             quality: screenshot.quality,
-            captureBeyondViewport: screenshot.captureBeyondViewport
         });
         screenshot.setBuffer(Buffer.from(result));
         return screenshot;
