@@ -7,7 +7,7 @@ export declare type Content = Array<{
 export declare type Encoding = "base64" | "binary";
 export declare type ImageType = "png" | "jpeg";
 export interface ScreenshotParams {
-    html?: string;
+    html?: string | null;
     url?: string;
     encoding?: Encoding;
     transparent?: boolean;

@@ -6,7 +6,7 @@ export type Encoding = "base64" | "binary";
 export type ImageType = "png" | "jpeg";
 
 export interface ScreenshotParams {
-  html?: string;
+  html?: string | null;
   url?: string;
   encoding?: Encoding;
   transparent?: boolean;

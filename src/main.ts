@@ -36,6 +36,7 @@ export default class nodeHtmlToImage {
   public async render(options: Options) {
     const {
       html,
+      url,
       encoding,
       transparent,
       content,
@@ -63,6 +64,7 @@ export default class nodeHtmlToImage {
         const { output, selector: contentSelector, ...pageContent } = content;
         return this.cluster.execute(
           {
+            url,
             html,
             encoding,
             transparent,
