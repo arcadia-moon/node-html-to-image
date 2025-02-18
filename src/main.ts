@@ -27,7 +27,7 @@ export default class nodeHtmlToImage {
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 2,
       timeout,
-      puppeteerOptions: { ...puppeteerArgs, headless: true },
+      puppeteerOptions: { ...puppeteerArgs, ...(typeof puppeteerArgs.headless !== undefined ? { headless: puppeteerArgs.headless } : { headless: true }) },
       puppeteer: puppeteer,
     })
     return this;
@@ -110,7 +110,7 @@ export default class nodeHtmlToImage {
     });
   }
 
-  
+
   public async shutdown(isProcessExit = false) {
     try {
       if (this.cluster) {
