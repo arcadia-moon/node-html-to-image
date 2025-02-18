@@ -21,6 +21,7 @@ export default class nodeHtmlToImage {
     const {
       clusterArgs = {},
       puppeteerArgs = {},
+      maxConcurrency = 1,
       timeout = 30000,
       concurrency = Cluster.CONCURRENCY_CONTEXT,
       puppeteer = undefined,
@@ -28,7 +29,7 @@ export default class nodeHtmlToImage {
     this.cluster = await Cluster.launch({
       ...clusterArgs,
       concurrency,
-      maxConcurrency: 2,
+      maxConcurrency,
       timeout,
       puppeteerOptions: { ...puppeteerArgs, ...(typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true }) },
       puppeteer: puppeteer,

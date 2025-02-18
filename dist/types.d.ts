@@ -28,6 +28,7 @@ export interface constructorOptions {
     puppeteerArgs?: PuppeteerNodeLaunchOptions;
     puppeteer?: any;
     timeout?: number;
+    maxConcurrency?: number;
     concurrency?: typeof Cluster.CONCURRENCY_CONTEXT | typeof Cluster.CONCURRENCY_BROWSER | typeof Cluster.CONCURRENCY_PAGE | number;
     clusterArgs?: Record<string, any>;
 }

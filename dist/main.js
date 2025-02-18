@@ -38,8 +38,10 @@ class nodeHtmlToImage {
     }
     createInstance() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { clusterArgs = {}, puppeteerArgs = {}, timeout = 30000, concurrency = puppeteer_cluster_1.Cluster.CONCURRENCY_CONTEXT, puppeteer = undefined, } = this.options;
-            this.cluster = yield puppeteer_cluster_1.Cluster.launch(Object.assign(Object.assign({}, clusterArgs), { concurrency, maxConcurrency: 2, timeout, puppeteerOptions: Object.assign(Object.assign({}, puppeteerArgs), (typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true })), puppeteer: puppeteer }));
+            const { clusterArgs = {}, puppeteerArgs = {}, maxConcurrency = 1, timeout = 30000, concurrency = puppeteer_cluster_1.Cluster.CONCURRENCY_CONTEXT, puppeteer = undefined, } = this.options;
+            this.cluster = yield puppeteer_cluster_1.Cluster.launch(Object.assign(Object.assign({}, clusterArgs), { concurrency,
+                maxConcurrency,
+                timeout, puppeteerOptions: Object.assign(Object.assign({}, puppeteerArgs), (typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true })), puppeteer: puppeteer }));
             return this;
         });
     }
