@@ -1,5 +1,7 @@
-import type { Page, PuppeteerLifeCycleEvent, PuppeteerNodeLaunchOptions } from "puppeteer";
+import type { Page, PuppeteerLifeCycleEvent } from "puppeteer";
+import type { LaunchOptions as PuppeteerNodeLaunchOptions } from "puppeteer";
 import type { Screenshot } from "./models/Screenshot";
+import type { Cluster } from "puppeteer-cluster";
 
 export type Content = Array<{ output: string; selector?: string }> | object;
 export type Encoding = "base64" | "binary";
@@ -25,8 +27,10 @@ export interface Options extends ScreenshotParams {
 
 export interface constructorOptions {
   puppeteerArgs?: PuppeteerNodeLaunchOptions;
-  puppeteer?: any,
-  timeout?: number
+  puppeteer?: any;
+  timeout?: number;
+  concurrency?: typeof Cluster.CONCURRENCY_CONTEXT | typeof Cluster.CONCURRENCY_BROWSER | typeof Cluster.CONCURRENCY_PAGE | number;
+  clusterArgs?: Record<string, any>;
 }
 
 export interface MakeScreenshotParams {
