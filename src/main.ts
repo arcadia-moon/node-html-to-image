@@ -27,7 +27,7 @@ export default class nodeHtmlToImage {
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 2,
       timeout,
-      puppeteerOptions: { ...puppeteerArgs, ...(typeof puppeteerArgs.headless !== undefined ? { headless: puppeteerArgs.headless } : { headless: true }) },
+      puppeteerOptions: { ...puppeteerArgs, ...(typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true }) },
       puppeteer: puppeteer,
     })
     return this;

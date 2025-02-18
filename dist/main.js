@@ -43,7 +43,7 @@ class nodeHtmlToImage {
                 concurrency: puppeteer_cluster_1.Cluster.CONCURRENCY_CONTEXT,
                 maxConcurrency: 2,
                 timeout,
-                puppeteerOptions: Object.assign(Object.assign({}, puppeteerArgs), (typeof puppeteerArgs.headless !== undefined ? { headless: puppeteerArgs.headless } : { headless: true })),
+                puppeteerOptions: Object.assign(Object.assign({}, puppeteerArgs), (typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true })),
                 puppeteer: puppeteer,
             });
             return this;
