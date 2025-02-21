@@ -38,7 +38,7 @@ class nodeHtmlToImage {
     }
     createInstance() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { clusterArgs = {}, puppeteerArgs = {}, maxConcurrency = 1, timeout = 30000, concurrency = puppeteer_cluster_1.Cluster.CONCURRENCY_CONTEXT, puppeteer = undefined, } = this.options;
+            const { clusterArgs = {}, puppeteerArgs = {}, maxConcurrency = 1, timeout = 30000, defaultMaxRetries = 0, concurrency = puppeteer_cluster_1.Cluster.CONCURRENCY_CONTEXT, puppeteer = undefined, } = this.options;
             this.cluster = yield puppeteer_cluster_1.Cluster.launch(Object.assign(Object.assign({}, clusterArgs), { concurrency,
                 maxConcurrency,
                 timeout, puppeteerOptions: Object.assign(Object.assign({}, puppeteerArgs), (typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true })), puppeteer: puppeteer }));
@@ -47,7 +47,7 @@ class nodeHtmlToImage {
     }
     render(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { html, url, encoding, transparent, content, output, selector, type, quality, blockedURLs = [], viewport, } = options;
+            const { html, url, encoding, transparent, content, output, selector, type, quality, maxRetries, blockedURLs = [], viewport, } = options;
             const shouldBatch = Array.isArray(content);
             const contents = shouldBatch ? content : [Object.assign(Object.assign({}, content), { output, selector })];
             if (!this.cluster) {
@@ -63,6 +63,7 @@ class nodeHtmlToImage {
                 }));
             }
             return Promise.all(contents.map((content) => {
+                var _a;
                 const { output, selector: contentSelector } = content, pageContent = __rest(content, ["output", "selector"]);
                 return this.cluster.execute({
                     url,
@@ -74,6 +75,7 @@ class nodeHtmlToImage {
                     selector: contentSelector ? contentSelector : selector,
                     type,
                     quality,
+                    maxRetries: (_a = maxRetries !== null && maxRetries !== void 0 ? maxRetries : this.options.defaultMaxRetries) !== null && _a !== void 0 ? _a : 3,
                     viewport,
                 }, ({ page, data }) => __awaiter(this, void 0, void 0, function* () {
                     try {

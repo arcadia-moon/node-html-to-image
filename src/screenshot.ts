@@ -12,6 +12,7 @@ export async function makeScreenshot(
     timeout,
     handlebarsHelpers,
     viewport,
+    maxRetries = 3,
   }: MakeScreenshotParams,
 ) {
   const defaultTimeout = timeout || 60000;
@@ -39,6 +40,35 @@ export async function makeScreenshot(
   };
 
   // 새 페이지 생성 함수
+  const retryOperation = async <T>(
+    operation: () => Promise<T>,
+    errorMessage: string,
+    options: {
+      waitUntil?: string | string[];
+      timeout?: number;
+    } = {}
+  ): Promise<T> => {
+    let retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+      try {
+        const result = await operation();
+        return result;
+      } catch (error) {
+        retryCount++;
+        console.error(`${errorMessage} attempt ${retryCount} failed:`, error);
+        
+        if (retryCount < maxRetries) {
+          currentPage = await createNewPage();
+        } else {
+          console.error(`Failed ${errorMessage} after`, maxRetries, 'attempts:', error);
+          throw error;
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+  };
+
   const createNewPage = async () => {
     const browser = currentPage.browser();
     if (currentPage !== page) {
@@ -58,43 +88,21 @@ export async function makeScreenshot(
         screenshot.setHTML(template(screenshot.content));
       }
 
-      try {
-        await currentPage.setContent(screenshot.html, { 
+      await retryOperation(
+        () => currentPage.setContent(screenshot.html, { 
           waitUntil,
           timeout: defaultTimeout 
-        });
-      } catch (error) {
-        console.error('Error setting content, retrying with new page:', error);
-        currentPage = await createNewPage();
-        await currentPage.setContent(screenshot.html, { 
+        }),
+        'Content setting'
+      );
+     } else {
+      await retryOperation(
+        () => currentPage.goto(screenshot.url, { 
           waitUntil,
-          timeout: defaultTimeout 
-        });
-      }
-    } else {
-      const maxRetries = 3;
-      let retryCount = 0;
-      
-      while (retryCount < maxRetries) {
-        try {
-          await currentPage.goto(screenshot.url, { 
-            waitUntil: ['networkidle0', 'domcontentloaded'],
-            timeout: defaultTimeout
-          });
-          break;
-        } catch (error) {
-          retryCount++;
-          console.error(`Navigation attempt ${retryCount} failed:`, error);
-
-          if (retryCount < maxRetries) {
-            currentPage = await createNewPage();
-          } else {
-            console.error('Failed to navigate after', maxRetries, 'attempts:', error);
-            throw error;
-          }
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
+          timeout: defaultTimeout
+        }),
+        'Navigation'
+      );
     }
 
     if (beforeScreenshot && typeof beforeScreenshot === "function") {

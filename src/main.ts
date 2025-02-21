@@ -23,6 +23,7 @@ export default class nodeHtmlToImage {
       puppeteerArgs = {},
       maxConcurrency = 1,
       timeout = 30000,
+      defaultMaxRetries = 0,
       concurrency = Cluster.CONCURRENCY_CONTEXT,
       puppeteer = undefined,
     } = this.options;
@@ -50,6 +51,7 @@ export default class nodeHtmlToImage {
       selector,
       type,
       quality,
+      maxRetries,
       blockedURLs = [],
       viewport,
     } = options;
@@ -80,6 +82,7 @@ export default class nodeHtmlToImage {
             selector: contentSelector ? contentSelector : selector,
             type,
             quality,
+            maxRetries: maxRetries ?? this.options.defaultMaxRetries ?? 3,
             viewport,
           },
           async ({ page, data }) => {

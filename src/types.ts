@@ -25,6 +25,7 @@ export interface ScreenshotParams {
   content?: Content;
   output?: string;
   viewport?: ViewportOptions;
+  maxRetries?: number;
 }
 
 export interface Options extends ScreenshotParams {
@@ -38,6 +39,7 @@ export interface constructorOptions {
   puppeteer?: any;
   timeout?: number;
   maxConcurrency?: number;
+  defaultMaxRetries?: number;
   concurrency?: typeof Cluster.CONCURRENCY_CONTEXT | typeof Cluster.CONCURRENCY_BROWSER | typeof Cluster.CONCURRENCY_PAGE | number;
   clusterArgs?: Record<string, any>;
   defaultViewport?: ViewportOptions;
@@ -48,6 +50,7 @@ export interface MakeScreenshotParams {
   waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
   beforeScreenshot?: (page: Page) => void;
   handlebarsHelpers?: { [helpers: string]: (...args: any[]) => any };
+  maxRetries?: number;
   viewport?: ViewportOptions;
   timeout?: number;
 }

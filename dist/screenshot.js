@@ -34,7 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.makeScreenshot = void 0;
 const handlebars_1 = __importStar(require("handlebars"));
-function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "networkidle0", timeout, handlebarsHelpers, viewport, }) {
+function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "networkidle0", timeout, handlebarsHelpers, viewport, maxRetries = 3, }) {
     return __awaiter(this, void 0, void 0, function* () {
         const defaultTimeout = timeout || 60000;
         let currentPage = page;
@@ -55,6 +55,27 @@ function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "netwo
             page.setDefaultTimeout(defaultTimeout);
         });
         // 새 페이지 생성 함수
+        const retryOperation = (operation, errorMessage, options = {}) => __awaiter(this, void 0, void 0, function* () {
+            let retryCount = 0;
+            while (retryCount < maxRetries) {
+                try {
+                    const result = yield operation();
+                    return result;
+                }
+                catch (error) {
+                    retryCount++;
+                    console.error(`${errorMessage} attempt ${retryCount} failed:`, error);
+                    if (retryCount < maxRetries) {
+                        currentPage = yield createNewPage();
+                    }
+                    else {
+                        console.error(`Failed ${errorMessage} after`, maxRetries, 'attempts:', error);
+                        throw error;
+                    }
+                    yield new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        });
         const createNewPage = () => __awaiter(this, void 0, void 0, function* () {
             const browser = currentPage.browser();
             if (currentPage !== page) {
@@ -71,45 +92,16 @@ function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "netwo
                     const template = (0, handlebars_1.compile)(screenshot.html);
                     screenshot.setHTML(template(screenshot.content));
                 }
-                try {
-                    yield currentPage.setContent(screenshot.html, {
-                        waitUntil,
-                        timeout: defaultTimeout
-                    });
-                }
-                catch (error) {
-                    console.error('Error setting content, retrying with new page:', error);
-                    currentPage = yield createNewPage();
-                    yield currentPage.setContent(screenshot.html, {
-                        waitUntil,
-                        timeout: defaultTimeout
-                    });
-                }
+                yield retryOperation(() => currentPage.setContent(screenshot.html, {
+                    waitUntil,
+                    timeout: defaultTimeout
+                }), 'Content setting');
             }
             else {
-                const maxRetries = 3;
-                let retryCount = 0;
-                while (retryCount < maxRetries) {
-                    try {
-                        yield currentPage.goto(screenshot.url, {
-                            waitUntil: ['networkidle0', 'domcontentloaded'],
-                            timeout: defaultTimeout
-                        });
-                        break;
-                    }
-                    catch (error) {
-                        retryCount++;
-                        console.error(`Navigation attempt ${retryCount} failed:`, error);
-                        if (retryCount < maxRetries) {
-                            currentPage = yield createNewPage();
-                        }
-                        else {
-                            console.error('Failed to navigate after', maxRetries, 'attempts:', error);
-                            throw error;
-                        }
-                        yield new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                }
+                yield retryOperation(() => currentPage.goto(screenshot.url, {
+                    waitUntil,
+                    timeout: defaultTimeout
+                }), 'Navigation');
             }
             if (beforeScreenshot && typeof beforeScreenshot === "function") {
                 yield beforeScreenshot(currentPage);
