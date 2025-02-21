@@ -14,7 +14,8 @@ export async function makeScreenshot(
     viewport,
   }: MakeScreenshotParams,
 ) {
-  page.setDefaultTimeout(timeout || 60000); // 기본 타임아웃 값 증가
+  const defaultTimeout = timeout || 60000;
+  let currentPage = page;
 
   const hasHelpers = handlebarsHelpers && typeof handlebarsHelpers === "object";
   if (hasHelpers) {
@@ -27,68 +28,91 @@ export async function makeScreenshot(
     }
   }
 
-  // viewport 설정이 있다면 적용
-  if (viewport) {
-    await page.setViewport({
-      ...viewport
-    });
-  }
-
-  if (screenshot.html) {
-    if (screenshot?.content || hasHelpers) {
-      const template = compile(screenshot.html);
-      screenshot.setHTML(template(screenshot.content));
-    }
-
-    try {
-      await page.setContent(screenshot.html, { 
-        waitUntil,
-        timeout: timeout || 60000 
+  // viewport 설정 적용 함수
+  const applyViewport = async (page: Page) => {
+    if (viewport) {
+      await page.setViewport({
+        ...viewport
       });
-    } catch (error) {
-      console.error('Error setting content:', error);
-      throw error;
     }
-  }
-  else {
-    const maxRetries = 3;
-    let retryCount = 0;
-    
-    while (retryCount < maxRetries) {
+    page.setDefaultTimeout(defaultTimeout);
+  };
+
+  // 새 페이지 생성 함수
+  const createNewPage = async () => {
+    const browser = currentPage.browser();
+    if (currentPage !== page) {
+      await currentPage.close();
+    }
+    currentPage = await browser.newPage();
+    await applyViewport(currentPage);
+    return currentPage;
+  };
+
+  try {
+    await applyViewport(currentPage);
+
+    if (screenshot.html) {
+      if (screenshot?.content || hasHelpers) {
+        const template = compile(screenshot.html);
+        screenshot.setHTML(template(screenshot.content));
+      }
+
       try {
-        await page.goto(screenshot.url, { 
-          waitUntil: ['networkidle0', 'domcontentloaded'],
-          timeout: timeout || 60000
+        await currentPage.setContent(screenshot.html, { 
+          waitUntil,
+          timeout: defaultTimeout 
         });
-        break;
       } catch (error) {
-        retryCount++;
-        if (retryCount === maxRetries) {
-          console.error('Failed to navigate after', maxRetries, 'attempts:', error);
-          throw error;
+        console.error('Error setting content, retrying with new page:', error);
+        currentPage = await createNewPage();
+        await currentPage.setContent(screenshot.html, { 
+          waitUntil,
+          timeout: defaultTimeout 
+        });
+      }
+    } else {
+      const maxRetries = 3;
+      let retryCount = 0;
+      
+      while (retryCount < maxRetries) {
+        try {
+          await currentPage.goto(screenshot.url, { 
+            waitUntil: ['networkidle0', 'domcontentloaded'],
+            timeout: defaultTimeout
+          });
+          break;
+        } catch (error) {
+          retryCount++;
+          console.error(`Navigation attempt ${retryCount} failed:`, error);
+
+          if (retryCount < maxRetries) {
+            currentPage = await createNewPage();
+          } else {
+            console.error('Failed to navigate after', maxRetries, 'attempts:', error);
+            throw error;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 재시도 전 1초 대기
       }
     }
-  }
-  const element = await page.$(screenshot.selector);
-  if (!element) {
-    throw Error("No element matches selector: " + screenshot.selector);
-  }
 
-  if (isFunction(beforeScreenshot)) {
-    await beforeScreenshot(page);
-  }
+    if (beforeScreenshot && typeof beforeScreenshot === "function") {
+      await beforeScreenshot(currentPage);
+    }
 
-  let result;
-  try {
     // 스크린샷 찍기 전 요소가 보이는지 확인
-    await page.waitForSelector(screenshot.selector, {
+    await currentPage.waitForSelector(screenshot.selector, {
       visible: true,
-      timeout: timeout || 60000
+      timeout: defaultTimeout
     });
-    
-    result = await element.screenshot({
+
+    const element = await currentPage.$(screenshot.selector);
+    if (!element) {
+      throw Error("No element matches selector: " + screenshot.selector);
+    }
+
+    const result = await element.screenshot({
       path: screenshot.output,
       type: screenshot.type,
       omitBackground: screenshot.transparent,
@@ -96,16 +120,22 @@ export async function makeScreenshot(
       quality: screenshot.quality,
     });
 
+    screenshot.setBuffer(Buffer.from(result));
+
+    // 원래 페이지가 아닌 경우 정리
+    if (currentPage !== page) {
+      await currentPage.close();
+    }
+
+    return screenshot;
   } catch (error) {
-    console.error('Error taking screenshot:', error);
+    if (currentPage !== page) {
+      await currentPage.close();
+    }
     throw error;
   }
-  screenshot.setBuffer(Buffer.from(result));
-
-  return screenshot;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isFunction(f: any) {
   return f && typeof f === "function";
 }
