@@ -7,6 +7,13 @@ export type Content = Array<{ output: string; selector?: string }> | object;
 export type Encoding = "base64" | "binary";
 export type ImageType = "png" | "jpeg";
 
+export interface ViewportOptions {
+  width: number;
+  height: number;
+  deviceScaleFactor?: number;
+  isMobile?: boolean;
+}
+
 export interface ScreenshotParams {
   html?: string | null;
   url?: string;
@@ -17,12 +24,13 @@ export interface ScreenshotParams {
   selector?: string;
   content?: Content;
   output?: string;
+  viewport?: ViewportOptions;
 }
 
 export interface Options extends ScreenshotParams {
   waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
   beforeScreenshot?: (page: Page) => void;
-  blockedURLs?: string[]
+  blockedURLs?: string[];
 }
 
 export interface constructorOptions {
@@ -32,6 +40,7 @@ export interface constructorOptions {
   maxConcurrency?: number;
   concurrency?: typeof Cluster.CONCURRENCY_CONTEXT | typeof Cluster.CONCURRENCY_BROWSER | typeof Cluster.CONCURRENCY_PAGE | number;
   clusterArgs?: Record<string, any>;
+  defaultViewport?: ViewportOptions;
 }
 
 export interface MakeScreenshotParams {
@@ -39,6 +48,6 @@ export interface MakeScreenshotParams {
   waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
   beforeScreenshot?: (page: Page) => void;
   handlebarsHelpers?: { [helpers: string]: (...args: any[]) => any };
-
-  timeout?: number
+  viewport?: ViewportOptions;
+  timeout?: number;
 }

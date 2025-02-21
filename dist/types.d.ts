@@ -8,6 +8,12 @@ export declare type Content = Array<{
 }> | object;
 export declare type Encoding = "base64" | "binary";
 export declare type ImageType = "png" | "jpeg";
+export interface ViewportOptions {
+    width: number;
+    height: number;
+    deviceScaleFactor?: number;
+    isMobile?: boolean;
+}
 export interface ScreenshotParams {
     html?: string | null;
     url?: string;
@@ -18,6 +24,7 @@ export interface ScreenshotParams {
     selector?: string;
     content?: Content;
     output?: string;
+    viewport?: ViewportOptions;
 }
 export interface Options extends ScreenshotParams {
     waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
@@ -31,6 +38,7 @@ export interface constructorOptions {
     maxConcurrency?: number;
     concurrency?: typeof Cluster.CONCURRENCY_CONTEXT | typeof Cluster.CONCURRENCY_BROWSER | typeof Cluster.CONCURRENCY_PAGE | number;
     clusterArgs?: Record<string, any>;
+    defaultViewport?: ViewportOptions;
 }
 export interface MakeScreenshotParams {
     screenshot: Screenshot;
@@ -39,5 +47,6 @@ export interface MakeScreenshotParams {
     handlebarsHelpers?: {
         [helpers: string]: (...args: any[]) => any;
     };
+    viewport?: ViewportOptions;
     timeout?: number;
 }

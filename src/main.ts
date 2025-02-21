@@ -31,7 +31,9 @@ export default class nodeHtmlToImage {
       concurrency,
       maxConcurrency,
       timeout,
-      puppeteerOptions: { ...puppeteerArgs, ...(typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true }) },
+      puppeteerOptions: { 
+        ...puppeteerArgs, 
+        ...(typeof puppeteerArgs.headless !== 'undefined' ? { headless: puppeteerArgs.headless } : { headless: true }) },
       puppeteer: puppeteer,
     })
     return this;
@@ -49,6 +51,7 @@ export default class nodeHtmlToImage {
       type,
       quality,
       blockedURLs = [],
+      viewport,
     } = options;
     const shouldBatch = Array.isArray(content);
     const contents = shouldBatch ? content : [{ ...content, output, selector }];
@@ -77,6 +80,7 @@ export default class nodeHtmlToImage {
             selector: contentSelector ? contentSelector : selector,
             type,
             quality,
+            viewport,
           },
           async ({ page, data }) => {
             try {

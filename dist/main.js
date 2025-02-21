@@ -47,7 +47,7 @@ class nodeHtmlToImage {
     }
     render(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { html, url, encoding, transparent, content, output, selector, type, quality, blockedURLs = [], } = options;
+            const { html, url, encoding, transparent, content, output, selector, type, quality, blockedURLs = [], viewport, } = options;
             const shouldBatch = Array.isArray(content);
             const contents = shouldBatch ? content : [Object.assign(Object.assign({}, content), { output, selector })];
             if (!this.cluster) {
@@ -74,6 +74,7 @@ class nodeHtmlToImage {
                     selector: contentSelector ? contentSelector : selector,
                     type,
                     quality,
+                    viewport,
                 }, ({ page, data }) => __awaiter(this, void 0, void 0, function* () {
                     try {
                         if (blockedURLs && Array.isArray(blockedURLs) && blockedURLs.length > 0) {

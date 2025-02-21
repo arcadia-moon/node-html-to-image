@@ -34,7 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.makeScreenshot = void 0;
 const handlebars_1 = __importStar(require("handlebars"));
-function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "networkidle0", timeout, handlebarsHelpers, }) {
+function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "networkidle0", timeout, handlebarsHelpers, viewport, }) {
     return __awaiter(this, void 0, void 0, function* () {
         page.setDefaultTimeout(timeout || 60000); // 기본 타임아웃 값 증가
         const hasHelpers = handlebarsHelpers && typeof handlebarsHelpers === "object";
@@ -45,6 +45,10 @@ function makeScreenshot(page, { screenshot, beforeScreenshot, waitUntil = "netwo
             else {
                 throw Error("Some helper is not a valid function");
             }
+        }
+        // viewport 설정이 있다면 적용
+        if (viewport) {
+            yield page.setViewport(Object.assign({}, viewport));
         }
         if (screenshot.html) {
             if ((screenshot === null || screenshot === void 0 ? void 0 : screenshot.content) || hasHelpers) {

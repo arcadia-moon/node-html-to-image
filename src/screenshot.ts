@@ -11,9 +11,11 @@ export async function makeScreenshot(
     waitUntil = "networkidle0",
     timeout,
     handlebarsHelpers,
+    viewport,
   }: MakeScreenshotParams,
 ) {
   page.setDefaultTimeout(timeout || 60000); // 기본 타임아웃 값 증가
+
   const hasHelpers = handlebarsHelpers && typeof handlebarsHelpers === "object";
   if (hasHelpers) {
     if (
@@ -24,6 +26,14 @@ export async function makeScreenshot(
       throw Error("Some helper is not a valid function");
     }
   }
+
+  // viewport 설정이 있다면 적용
+  if (viewport) {
+    await page.setViewport({
+      ...viewport
+    });
+  }
+
   if (screenshot.html) {
     if (screenshot?.content || hasHelpers) {
       const template = compile(screenshot.html);
