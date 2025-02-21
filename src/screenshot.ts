@@ -108,7 +108,7 @@ export async function makeScreenshot(
     if (beforeScreenshot && typeof beforeScreenshot === "function") {
       await beforeScreenshot(currentPage);
     }
-
+    
     // 스크린샷 찍기 전 요소가 보이는지 확인
     await currentPage.waitForSelector(screenshot.selector, {
       visible: true,

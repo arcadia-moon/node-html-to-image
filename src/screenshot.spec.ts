@@ -10,6 +10,7 @@ describe("beforeScreenshot", () => {
   beforeEach(() => {
     page = {
       setContent: jest.fn(),
+      waitForSelector: jest.fn(),
       setDefaultTimeout: jest.fn(),
       $: jest.fn(() => ({ screenshot: jest.fn(() => buffer) })),
     };
@@ -112,6 +113,7 @@ describe("handlebarsHelpers", () => {
   beforeEach(() => {
     page = {
       setContent: jest.fn(),
+      waitForSelector: jest.fn(),
       setDefaultTimeout: jest.fn(),
       $: jest.fn(() => ({ screenshot: jest.fn(() => buffer) })),
     };
